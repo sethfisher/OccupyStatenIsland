@@ -1,0 +1,12 @@
+; $Id$
+name = Just Another Social Module (JASM)
+description = Provides a single place to configure and subsequently promote your site's presence on other sites, like your company's Facebook page, or your company's Twitter feed.
+package = Services
+core = 7.x
+
+; Information added by drupal.org packaging script on 2011-08-22
+version = "7.x-1.1"
+core = "7.x"
+project = "jasm"
+datestamp = "1314004317"
+

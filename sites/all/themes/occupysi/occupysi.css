@@ -1,0 +1,165 @@
+body {
+  background: url('images/Crescent-Beach12.jpg') fixed no-repeat center #E2EEF2;
+  background-size: 100%;
+}
+
+#content-prefix, #main, #footer {
+  position: relative;
+  top: 50px;
+}
+
+#content-prefix {
+  padding: 25px 0 25px 0px;
+  margin: 0;
+}
+
+#content-prefix .block-wrapper {
+  float: left;
+}
+
+#content-prefix #logo {
+  padding: 0;
+}
+
+body.front #content-prefix #logo img {
+  width: 284px;
+  height: 350px;
+}
+
+body.not-front #content-prefix #logo img {
+  width: 121px;
+  height: 150px;
+}
+
+#content-prefix #site-name {
+  padding: 25px;
+}
+
+#content-prefix .osi-message-block {
+  width: 510px;
+  padding: 10px 83px 0px 43px;
+  font-size: 1.1em;
+  color: #131A1C;
+}
+
+#content-prefix .osi-message-block p {
+  font-weight: bold;
+}
+
+#header-menu, #closure {
+  background-color: #333333;
+}
+
+#header-menu {
+  position: fixed;
+  z-index: 500;
+  margin-left: 0;
+  width: 960px;
+  height: 50px;
+}
+
+#header-menu .block-wrapper, #header-menu .clearfix:after {
+  display: inline;
+}
+
+#header-menu div.main-menu {
+  float: left;
+}
+
+#header-menu div.main-menu li a {
+  line-height: 26px;
+}
+
+#header-menu .content ul li a.active:hover {
+  color: #1A272E;
+}
+
+#header-menu .sf-menu li:hover ul,
+#header-menu .sf-menu li.sfHover ul {
+  top: 50px;
+}
+
+#header-menu .sf-sub-indicator {
+  top: 18px;
+}
+
+#header-menu a.active .sf-sub-indicator {
+  background-image: url('/sites/all/libraries/superfish/images/arrows-777777.png');
+}
+
+#header-menu ul.sf-megamenu {
+  width: 18em;
+}
+
+#header-menu .sf-menu.sf-style-space li.sf-parent-children-2 ul.sf-megamenu {
+width: 35em;
+}
+
+#header-menu .sf-menu.sf-style-space ul.sf-megamenu li.sf-megamenu-wrapper {
+  background: #333333;
+}
+
+#header-menu .sf-menu.sf-style-space ul.sf-megamenu li.sf-megamenu-wrapper a.menuparent {
+  font-size: 1.5em;
+}
+
+#header-menu .sf-menu.sf-style-space ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column.first {
+width: 20em;
+}
+
+#header-menu .sf-menu.sf-style-space ul.sf-megamenu li.sf-megamenu-wrapper ol li.sf-megamenu-column.last {
+width: 15em;
+}
+
+#header-menu div.social-networking {
+  float: right;
+  margin-right: 10px;
+}
+
+#header-menu div.social-networking li a {
+  text-indent: -2000px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+}
+
+#header-menu div.social-networking a#menu-facebook {
+  background-image: url('images/facebook-icon.png');
+}
+
+#header-menu div.social-networking a#menu-twitter {
+  background-image: url('images/twitter-icon.png');
+}
+
+#main {
+  opacity: .8;
+}
+
+#block-jasm-twitter_profile_widget .twtr-doc {
+  width: auto !important;
+}
+
+#block-jasm-twitter_profile_widget .twtr-timeline {
+  height: auto !important;
+}
+
+body.page-events #main {
+  background-image: none;
+}
+
+body.page-events #content .inner {
+  margin-left: 0;
+}
+
+body.node-type-working-group div.field-type-email div.field-label {
+  float: left;
+}
+
+#closure {
+  padding: 0;
+}
+
+#footer-menu {
+  padding: 13px 22px;
+}

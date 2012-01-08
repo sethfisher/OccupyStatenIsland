@@ -1,0 +1,1330 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Tired of custom blocks with embedded php or javascript to render 3rd party widgets? JASM creates blocks and lists of some Social Media services available online, like a Facebook Like Box or a Twitter feed. Customize all variables of these social plugins to suit your site's theme.
+ */
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the onthisdate module
+*/
+function jasm_permission() {
+  return array(
+    'configure social block attributes' => array(
+      'title' => t('Configure Social Block Attributes'),
+      'description' => t('Capture Social Media Services Information and set global block sizes'),
+    ),
+  );
+} // function jasm_perm()
+
+/**
+* Implementation of hook_menu().
+*/
+function jasm_menu() {
+  $items['admin/config/jasm'] =  array(
+    'title' => '"Just Another Social Module" Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jasm_admin_settings'),
+    'description' => 'Configure which services to activate and their respective attributes',
+    'access arguments' => array('configure social block attributes'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+* The admin settings for this module.
+*
+*/
+function jasm_admin_settings() {
+  $jasm = jasm_get_values();
+
+  $form = array();
+  $form['#tree'] = TRUE;
+
+  // GENERAL SETTINGS
+  $form['jasm_general'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('General social block settings'),
+    '#weight' => 0,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => -11,
+  );
+
+  $form['jasm_general']['blockwidth'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Social block <strong>width</strong>'),
+    '#default_value' => $jasm['jasm_general']['blockwidth'],
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#description' => t("The pixel width of the widget (facebook, twitter, etc.) for display"),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_general']['blockheight'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Height of a social block'),
+    '#default_value' => $jasm['jasm_general']['blockheight'],
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#description' => t("The pixel height of the widget (facebook, twitter, etc.) for display (ideal height, some scripts override this value)"),
+    '#required' => FALSE,
+  );
+  //FACEBOOK SETTINGS
+  $form['jasm_facebook'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Facebook'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_facebook']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_facebook']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_facebook']['basepath'],
+    '#description' => t('The base path or url for the service. Used to construct hyperlinks to the service.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_facebook']['inlist'],
+    '#description' => t('Include a <em>Facebook</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_facebook']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_facebook']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Facebook <em>Page</em> path'),
+    '#default_value' => $jasm['jasm_facebook']['href'],
+    '#description' => t('Relative to the facebook domain, ie. Everything after "http://www.facebook.com/"'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['fbid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The Facebook Page ID'),
+    '#default_value' => $jasm['jasm_facebook']['fbid'],
+    '#description' => t("The Facebook Page ID."),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['colorscheme'] = array(
+    '#type' => 'select',
+    '#title' => t('Color scheme'),
+    '#default_value' => $jasm['jasm_facebook']['colorscheme'],
+    '#description' => t('The preferred color scheme for your widget'),
+    '#required' => FALSE,
+    '#options' => array(
+      'light' => t('Light'),
+      'dark' => t('Dark'),
+    ),
+  );
+
+  $form['jasm_facebook']['faces'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show faces'),
+    '#default_value' => $jasm['jasm_facebook']['faces'],
+    '#description' => t('Show/Hide faces of Facebook Page fans.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['stream'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show stream'),
+    '#default_value' => $jasm['jasm_facebook']['stream'],
+    '#description' => t('Show/Hide Stream of Facebook Page wall.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_facebook']['header'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show header'),
+    '#default_value' => $jasm['jasm_facebook']['header'],
+    '#description' => t('Show/Hide "Find us on Facebook".'),
+    '#required' => FALSE,
+  );
+
+  // FLICKR SETTINGS
+  $form['jasm_flickr'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Flickr Account'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_flickr']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_flickr']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_flickr']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_flickr']['basepath'],
+    '#description' => t('The base path or url for the service. Used to construct hyperlinks to the service.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_flickr']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_flickr']['inlist'],
+    '#description' => t('Include a <em>Flickr</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_flickr']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_flickr']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_flickr']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Flickr username'),
+    '#default_value' => $jasm['jasm_flickr']['href'],
+    '#description' => t(''),
+    '#required' => FALSE,
+  );
+
+  // FOURSQUARE SETTINGS
+
+  $form['jasm_4sqr'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Foursquare (venue)'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_4sqr']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_4sqr']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_4sqr']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_4sqr']['basepath'],
+    '#description' => t('The base path or url for the service. Used to construct hyperlinks to the service.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_4sqr']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_4sqr']['inlist'],
+    '#description' => t('Include a <em>Foursquare</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_4sqr']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_4sqr']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_4sqr']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Foursquare venue id'),
+    '#default_value' => $jasm['jasm_4sqr']['href'],
+    '#description' => t('The unique id of the venue you manage on Foursquare. Usually the number following http://www.foursquare.com/venue/ when visiting a venue page on foursquare.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_4sqr']['placewidget_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('PlaceWidget location code'),
+    '#default_value' => $jasm['jasm_4sqr']['placewidget_code'],
+    '#description' => t('The code generated by http://www.placewidget.com. Get the valie from the widget code (between "k=" and "&s"). See help for details.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_4sqr']['interval'] = array(
+    '#type' => 'select',
+    '#title' => t('Update interval'),
+    '#default_value' => $jasm['jasm_4sqr']['interval'],
+    '#description' => t('PlaceWidget update interval. A longer interval will make the widget load faster, but data won\'t be as up to date.'),
+    '#required' => FALSE,
+    '#options' => array(
+      1 => '1 minute',
+      15 => '15 minutes',
+      30 => '30 minutes',
+      60 => '1 hour',
+      360 => '6 hours',
+      720 => '12 hours',
+    ),
+  );
+
+  // RSS SETTINGS
+  $form['jasm_rss'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Subscription settings (RSS)'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_rss']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_rss']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_rss']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_rss']['inlist'],
+    '#description' => t('Include an <em>RSS</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_rss']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_rss']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_rss']['basepath'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_rss']['basepath'],
+    '#description' => t('The base path or url for the service. Defaults to this website\'s base path. Do not include http://'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_rss']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('RSS url'),
+    '#default_value' => $jasm['jasm_rss']['href'],
+    '#description' => t('The path to your main feed relative to your base path. Defaults to rss.xml (ie. all nodes promoted to the front page). Do not include the opening /'),
+    '#required' => FALSE,
+  );
+
+  // TWITTER SETTINGS
+  $form['jasm_twitter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Twitter'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_twitter']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_twitter']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_twitter']['basepath'],
+    '#description' => t('The base path or url for the service. Used to construct hyperlinks to the service.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_twitter']['inlist'],
+    '#description' => t('Include a <em>Twitter</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_twitter']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_twitter']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username'),
+    '#default_value' => $jasm['jasm_twitter']['href'],
+    '#description' => t('Your Twitter username'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_pollresults'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Poll results'),
+    '#default_value' => $jasm['jasm_twitter']['pref_pollresults'],
+    '#description' => t('Poll Twitter results in widgets'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_scrollbar'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include scroll bar'),
+    '#default_value' => $jasm['jasm_twitter']['pref_scrollbar'],
+    '#description' => t('Display a scroll bar within widget(s)'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_timed'] = array(
+    '#type' => 'select',
+    '#title' => t('Behaviour'),
+    '#default_value' => $jasm['jasm_twitter']['pref_timed'],
+    '#description' => t('The preferred method to load and display tweets in a widget(s)'),
+    '#required' => FALSE,
+    '#options' => array(
+      'all' => t('Load all Tweets'),
+      'default' => t('Timed with an interval'),
+    ),
+  );
+
+  $form['jasm_twitter']['pref_loop'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Loop Tweets'),
+    '#default_value' => $jasm['jasm_twitter']['pref_loop'],
+    '#description' => t('Whether or not Tweets should loop when displaying <em>Timed Tweets</em>. Has no effect when loading all tweets'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_tweet_interval'] = array(
+    '#type' => 'select',
+    '#title' => t('Timed interval'),
+    '#default_value' => $jasm['jasm_twitter']['pref_tweet_interval'],
+    '#description' => t('The interval between displaying <em>Timed Tweets</em>.'),
+    '#required' => FALSE,
+    '#options' => array(
+      2 => '2 seconds',
+      3 => '3 seconds',
+      4 => '4 seconds',
+      5 => '5 seconds',
+      6 => '6 seconds',
+      7 => '7 seconds',
+      8 => '8 seconds',
+      9 => '9 seconds',
+      10 => '10 seconds',
+      11 => '11 seconds',
+      12 => '12 seconds',
+      13 => '13 seconds',
+      14 => '14 seconds',
+      15 => '15 seconds',
+      16 => '16 seconds',
+      17 => '17 seconds',
+      18 => '18 seconds',
+      19 => '19 seconds',
+      20 => '20 seconds',
+    ),
+  );
+
+  $form['jasm_twitter']['pref_tweet_number'] = array(
+    '#type' => 'select',
+    '#title' => t('Number of Tweets'),
+    '#default_value' => $jasm['jasm_twitter']['pref_tweet_number'],
+    '#description' => t('Number of Tweets to display in widget(s).'),
+    '#required' => FALSE,
+    '#options' => array(
+      1 => '1 tweet',
+      2 => '2 tweets',
+      3 => '3 tweets',
+      4 => '4 tweets',
+      5 => '5 tweets',
+      6 => '6 tweets',
+      7 => '7 tweets',
+      8 => '8 tweets',
+      9 => '9 tweets',
+      10 => '10 tweets',
+      11 => '11 tweets',
+      12 => '12 tweets',
+      13 => '13 tweets',
+      14 => '14 tweets',
+      15 => '15 tweets',
+      16 => '16 tweets',
+      17 => '17 tweets',
+      18 => '18 tweets',
+      19 => '19 tweets',
+      20 => '20 tweets',
+    ),
+  );
+
+  $form['jasm_twitter']['pref_avatars'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display avatars'),
+    '#default_value' => $jasm['jasm_twitter']['pref_avatars'],
+    '#description' => t('Whether or not to display the author avatar next to tweets.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_timestamp'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display timestamp'),
+    '#default_value' => $jasm['jasm_twitter']['pref_timestamp'],
+    '#description' => t('Whether or not to display the time published.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['pref_hashtags'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display hashtags'),
+    '#default_value' => $jasm['jasm_twitter']['pref_hashtags'],
+    '#description' => t('Whether or not to display hashtags within tweets.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['color_shellback'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Shell background color'),
+    '#default_value' => $jasm['jasm_twitter']['color_shellback'],
+    '#description' => t('The main background color.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['color_shelltext'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Shell text color'),
+    '#default_value' => $jasm['jasm_twitter']['color_shelltext'],
+    '#description' => t('The text color on the main background color.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['color_tweetback'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tweet background color'),
+    '#default_value' => $jasm['jasm_twitter']['color_tweetback'],
+    '#description' => t('The background color inside the shell of the widget(s).'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['color_tweettext'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tweet color'),
+    '#default_value' => $jasm['jasm_twitter']['color_tweettext'],
+    '#description' => t('The text color of Tweet text.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['color_link'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link color'),
+    '#default_value' => $jasm['jasm_twitter']['color_link'],
+    '#description' => t('The text color of Tweet text.'),
+    '#required' => FALSE,
+  );
+
+  // Twitter Follow Button Settings
+  //  $form['jasm_twitter']['but_markup'] = array(
+  //    '#value' => t('The following settings apply to the Twitter Follow button.'),
+  //  );
+
+  $form['jasm_twitter']['but_show_count'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display followers count'),
+    '#default_value' => $jasm['jasm_twitter']['but_show_count'],
+    '#description' => t('Whether or not to display the amount of followers on the Twitter Follow button.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['but_color_butcolor'] = array(
+    '#type' => 'select',
+    '#title' => t('Follow Button Color'),
+    '#default_value' => $jasm['jasm_twitter']['but_color_butcolor'],
+    '#description' => t('The Twitter Follow button is available in two preset colors depending on your background color, ie. Blue or Grey'),
+    '#required' => FALSE,
+    '#options' => array(
+      'blue' => 'Blue',
+      'grey' => 'Grey',
+    ),
+  );
+
+  $form['jasm_twitter']['but_color_textcolor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text color'),
+    '#default_value' => $jasm['jasm_twitter']['but_color_textcolor'],
+    '#description' => t('If you have specified to show the amount of followers above, you can specify the text color\'s hex value to override the default blue or grey presets. Leave blank for default.'),
+    '#required' => FALSE,
+    '#field_prefix' => '#',
+    '#size' => 6,
+  );
+
+  $form['jasm_twitter']['but_color_linkcolor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text color'),
+    '#default_value' => $jasm['jasm_twitter']['but_color_linkcolor'],
+    '#description' => t('You can also override the link color of your username with a hex value. Leave blank for default.'),
+    '#required' => FALSE,
+    '#field_prefix' => '#',
+    '#size' => 6,
+  );
+
+  $form['jasm_twitter']['but_lang'] = array(
+    '#type' => 'select',
+    '#title' => t('Follow Button language'),
+    '#default_value' => $jasm['jasm_twitter']['but_color_butcolor'],
+    '#description' => t('The Twitter Follow button has some available languages'),
+    '#required' => FALSE,
+    '#options' => array(
+      'en' => 'English',
+      'fr' => 'French',
+      'de' => 'German',
+      'it' => 'Italian',
+      'es' => 'Spanish',
+      'ko' => 'Korean',
+      'ja' => 'Japanese',
+    ),
+  );
+
+  $form['jasm_twitter']['but_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Follow button width'),
+    '#default_value' => $jasm['jasm_twitter']['but_width'],
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#description' => t("The preferred pixel width of the <em>Twitter Follow button</em> (if used). Leave blank for default (250px)"),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_twitter']['but_text_align'] = array(
+    '#type' => 'select',
+    '#title' => t('Follow button alignment'),
+    '#default_value' => $jasm['jasm_twitter']['but_text_align'],
+    '#description' => t('Align the follow button text left or right.'),
+    '#required' => FALSE,
+    '#options' => array(
+      'left' => t('Left'),
+      'right' => t('Right'),
+    ),
+  );
+
+  // YOUTUBE SETTINGS
+  $form['jasm_youtube'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('YouTube channel'),
+    '#weight' => -5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  $form['jasm_youtube']['name'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_youtube']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_youtube']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path'),
+    '#default_value' => $jasm['jasm_youtube']['basepath'],
+    '#description' => t('The base path or url for the service. Used to construct hyperlinks to the service.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_youtube']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_youtube']['inlist'],
+    '#description' => t('Include a <em>YouTube</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_youtube']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_youtube']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_youtube']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('YouTube channel name'),
+    '#default_value' => $jasm['jasm_youtube']['href'],
+    '#description' => t('Or your YouTube account name. Typically this would follow the YouTube domain on your channel page, e.g. http://www.youtube.com/samsungblog'),
+    '#required' => FALSE,
+  );
+
+  // Custom services (aka BYOS "Bring Your Own Service" or DIYS "Do It Yourself Service")
+
+  $form['jasm_custom_01'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Custom service 01'),
+    '#weight' => -3,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['jasm_custom_01']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_custom_01']['inlist'],
+    '#description' => t('Include a <em>Custom</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_01']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_custom_01']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_custom_01']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_custom_01']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_01']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path for constructing URL'),
+    '#default_value' => $jasm['jasm_custom_01']['basepath'],
+    '#description' => t('The value of this field is being overriden by the value of the href variable.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_01']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom service url'),
+    '#default_value' => $jasm['jasm_custom_01']['href'],
+    '#description' => t('The full url of the custom service. Do not include "http://"'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Custom service 02'),
+    '#weight' => -2,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['jasm_custom_02']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_custom_02']['inlist'],
+    '#description' => t('Include a <em>Custom</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_custom_02']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_custom_02']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom service url'),
+    '#default_value' => $jasm['jasm_custom_01']['href'],
+    '#description' => t('The full url of the custom service. Do not include "http://"'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Custom service 02'),
+    '#weight' => -2,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['jasm_custom_02']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_custom_02']['inlist'],
+    '#description' => t('Include a <em>Custom</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_custom_02']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_custom_02']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_custom_02']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path for constructing URL'),
+    '#default_value' => $jasm['jasm_custom_02']['basepath'],
+    '#description' => t('The value of this field is being overriden by the value of the href variable.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_02']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom service url'),
+    '#default_value' => $jasm['jasm_custom_02']['href'],
+    '#description' => t('The full url of the custom service. Do not include "http://"'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_03'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Custom service 03'),
+    '#weight' => -1,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['jasm_custom_03']['inlist'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include in list'),
+    '#default_value' => $jasm['jasm_custom_03']['inlist'],
+    '#description' => t('Include a <em>Custom</em> link in the JASM social list'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_03']['weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Weight'),
+    '#default_value' => $jasm['jasm_custom_03']['weight'],
+    '#delta' => 10,
+    '#description' => t('Optional. Re-order the items in the JASM list by adjusting the weight.'),
+  );
+
+  $form['jasm_custom_03']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service name'),
+    '#default_value' => $jasm['jasm_custom_03']['name'],
+    '#description' => t('The name of the 3rd party or service. This is used to generate css class name(s) and the titles of the links in the <em>JASM Service List</em>.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_03']['basepath'] = array(
+    '#type' => 'hidden',
+    '#title' => t('Base path for constructing URL'),
+    '#default_value' => $jasm['jasm_custom_03']['basepath'],
+    '#description' => t('The value of this field is being overriden by the value of the href variable.'),
+    '#required' => FALSE,
+  );
+
+  $form['jasm_custom_03']['href'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom service url'),
+    '#default_value' => $jasm['jasm_custom_03']['href'],
+    '#description' => t('The full url of the custom service. Do not include "http://"'),
+    '#required' => FALSE,
+  );
+  return system_settings_form($form);
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function jasm_help($path, $arg) {
+  $help = '';
+  switch ($path) {
+    case 'admin/settings/jasm':
+      $help .= '<p><em>"' . t('Just Another Social Module') . '"</em> ' . "\n";
+      $help .= t('helps you configure your 3rd party affiliate sites with your company (or personal) website / domain, e.g. Facebook page or Twitter feed.') . '</p>' . "\n";
+      break;
+    case 'admin/help#jasm':
+      $help .= '<p><em>"' . t('Just Another Social Module') . '"</em> ' . "\n";
+      $help .= t('helps you configure your 3rd party affiliate sites with your company (or personal) website / domain, e.g. Facebook page or Twitter feed.') . '</p>' . "\n";
+      $help .= '<dl>' . "\n";
+      // FACEBOOK Config help
+      $help .= '<dt>Facebook configuration</dt>' . "\n";
+      $help .= '<dd>' . t('You will need to already have a Facebook page for the "Like box" widget to work. The information you require to fill in the fields can be obtained by visiting your page on facebook. Here\'s an example:') . '<br />' . '<img src="https://img.skitch.com/20110502-xda5gckhey6xkqt8xx7rxw1iea.jpg" alt="A typical url of a Facebook page" />' . '<br />' . t('Your <em>Facebook Page ID</em> value is optional, but can also be found in your page\'s admin. See the resemblance between the above url and the values provided for the configuration page:') . '<br />' . '<img src="https://img.skitch.com/20110502-8a8n6agtqywmd9cck216bmhiag.jpg" alt="The path and page id values filled in" /><br />' . '</dd>' . "\n";
+      // FOURSQUARE Config help
+      $help .= '<dt>Foursquare configuration</dt>' . "\n";
+      $help .= '<dd>' . t('The widget provided in JASM is courtesy of http://www.placewidget.com/. To fully configure your widget, you will have to visit PlaceWidget and generate the script to get the necessary values to fill in.') . "\n";
+      // TODO: Be more specific about the settings here
+      $help .= '</dd>' . "\n";
+      // end the list
+      $help .= '</dl>' . "\n";
+      break;
+  }
+  return $help;
+}
+
+/**
+ * Implementation of hook_block_info().
+ */
+function jasm_block_info() {
+  $blocks = array();
+  // Service List
+  $blocks['service_list'] = array(
+    'info' => t('JASM Service List'),
+  );
+
+  // Facebook Related Blocks
+  $blocks['fb_like_box'] = array(
+    'info' => t('JASM Facebook Like Box'),
+  );
+
+  // Twitter Related Blocks
+  $blocks['twitter_profile_widget'] = array(
+    'info' => t('JASM Twitter Profile widget'),
+  );
+
+  $blocks['twitter_follow_button'] = array(
+    'info' => t('JASM Twitter Follow Button'),
+  );
+  // TODO: JASM Twitter Search widget $block[3]
+  // TODO: JASM Twitter Follow widget $block[4]
+  // TODO: JASM Twitter List widget $block[5]
+
+  // Foursquare Related Blocks
+  $blocks['4sq_pw_venue'] = array(
+    'info' => t('JASM Foursqaure venue widget (from placewidget.com)'),
+  );
+
+  return $blocks;
+} // hook_block_info
+
+/**
+ * Implementation of hook_block_view().
+ * @param string $delta code to identify the block
+ */
+function jasm_block_view($delta = '') {
+  // Generate the subject and content for the available blocks
+  // as defined in hook_block_info
+  $block = array();
+  switch ($delta) {
+    case 'service_list':
+      $block['subject'] = t('Social media');
+      $block['content'] = jasm_service_list();
+      break;
+
+    // Facebook Related Blocks
+    case 'fb_like_box':
+      $block['subject'] = NULL;
+      $block['content'] = jasm_facebook_likebox();
+      break;
+
+    // Twitter Related Blocks
+    case 'twitter_profile_widget':
+      $block['subject'] = NULL;
+      $block['content'] = jasm_twitter_profilebox();
+      break;
+
+    case 'twitter_follow_button':
+      $block['subject'] = NULL;
+      $block['content'] = jasm_twitter_followbut();
+      break;
+
+    // Foursquare Related Blocks
+    case '4sq_pw_venue':
+      $block['subject'] = NULL;
+      $block['content'] = jasm_4sqr_venuebox();
+      break;
+  } // endswitch (delta)
+
+  return $block;
+} // function jasm_block_view()
+
+/**
+ * Arrange all the selected services into an unordered list, that's friendly
+ * to themers, or can simply be rendered into a block region
+ */
+function jasm_service_list() {
+  // Fetch all the JASM variables to render the list as set in the preferences
+  $jasm = jasm_get_values();
+  $servicelist = array();
+  $attributes = array('class' => 'jasm-service-list');
+  $i = 0;
+  //Sort the applicable elements by weight
+  array_shift($jasm);
+  uasort($jasm, "element_sort");
+
+  foreach ($jasm as $service) {
+    if ($service['inlist']) {
+      $servicelist[$i] = l($service['name'], ('http://' . $service['basepath'] . '/' . $service['href']), array('attributes' => array('class' => strtolower($service['name']), ), ));
+      $i++;
+    } //endif
+  } //endforeach
+
+  $variables = array(
+    'items' => $servicelist,
+    'title' => NULL,
+    'type' => "ul",
+    'attributes' => $attributes,
+  );
+
+  $output = theme_item_list($variables);
+  return $output;
+}
+
+/**
+ * Create markup for a 'Facebook Like Box' to be placed in a block
+ */
+function jasm_facebook_likebox() {
+  // Fetch the necessary variables for a Facebook Like Box
+  $general = jasm_get_values_general();
+  $facebook = jasm_get_values_facebook();
+
+  // iFrame code
+  $output = '<iframe src="http://www.facebook.com/plugins/likebox.php?';
+
+  // Facebook Page ID
+  $output .= 'id=' . $facebook['fbid'] . '&amp;';
+  // Block Width
+  $output .= 'width=' . $general['blockwidth'] . '&amp;';
+  // Colorscheme
+  $output .= 'colorscheme=' . $facebook['colorscheme'] . '&amp;';
+  // Show faces or not
+  $output .= 'show_faces=' . $facebook['faces'] . '&amp;';
+  // Show stream or not
+  $output .= 'stream=' . $facebook['stream'] . '&amp;';
+  // Show header or not
+  $output .= 'header=' . $facebook['header'] . '&amp;';
+  // Block height
+  $output .= 'height=' . $general['blockheight'] . '"';
+
+  // Finish off the iframe code
+  $output .= ' scrolling="no" frameborder="0" style="border:none; overflow:hidden; ';
+
+  // Repeat the width and height for the iframe declaration
+  $output .= 'width:' . $general['blockwidth'] . 'px; ';
+  $output .= 'height:' . $general['blockheight'] . 'px;" ';
+
+  $output .= 'allowTransparency="true"></iframe>';
+  return $output;
+}
+
+/**
+ * Create markup for a 'Twitter Profile Widget' to be placed in a block
+ */
+function jasm_twitter_profilebox() {
+  // Fetch the necessary variables for a Twitter Profile Like Box
+  $general = jasm_get_values_general();
+  $twitter = jasm_get_values_twitter();
+
+  $script = '<script src="http://widgets.twimg.com/j/2/widget.js"></script>';
+  $script .= '<script>';
+  $script .= 'new TWTR.Widget({';
+  $script .= 'version: 2,';
+  // Todo: Investigate other "types"
+  $script .= 'type: \'profile\',';
+  $script .= 'rpp: ' . $twitter['pref_tweet_number'] . ',';
+  // Set Tweet Interval for timed Tweets
+  $script .= 'interval: ' . $twitter['pref_tweet_interval'] . '000,';
+  // Set the block width
+  $script .= 'width: ' . $general['blockwidth'] . ',';
+  // Set the block height
+  $script .= 'height: ' . $general['blockheight'] . ',';
+  $script .= 'theme: {';
+  $script .= 'shell: {';
+  $script .= 'background: \'' . $twitter['color_shellback'] . '\',';
+  $script .= 'color: \'' . $twitter['color_shelltext'] . '\'';
+  $script .= '},';
+  $script .= 'tweets: {';
+  $script .= 'background: \'' . $twitter['color_tweetback'] . '\',';
+  $script .= 'color: \'' . $twitter['color_tweettext'] . '\',';
+  $script .= 'links: \'' . $twitter['color_link'] . '\'';
+  $script .= '}';
+  $script .= '},';
+  $script .= 'features: {';
+  $script .= 'scrollbar: ' . $twitter['pref_scrollbar'] . ',';
+  $script .= 'loop: ' . $twitter['pref_loop'] . ',';
+  $script .= 'live: ' . $twitter['pref_pollresults'] . ',';
+  $script .= 'hashtags: ' . $twitter['pref_hashtags'] . ',';
+  $script .= 'timestamp: ' . $twitter['pref_timestamp'] . ',';
+  $script .= 'avatars: ' . $twitter['pref_avatars'] . ',';
+  $script .= 'behavior: \'' . $twitter['pref_timed'] . '\'';
+  $script .= '}';
+  $script .= '}).render().setUser(\'' . $twitter['href'] . '\').start();';
+  $script .= '</script>';
+
+  return $script;
+}
+
+function jasm_twitter_followbut() {
+  // Fetch the necessary variables for a Twitter Follow Button
+  $twitter = jasm_get_values_twitter();
+
+  $script = '';
+  $script .= '<a href="http://twitter.com/' . $twitter['href'] . '" class="twitter-follow-button" ';
+  // Twitter Follow Button Settings
+  $script .= 'data-show-count="' . $twitter['but_show_count'] . '" ';
+  $script .= 'data-button="' . $twitter['but_color_butcolor'] . '" ';
+
+  // Set the text and link colour if values are specified in the admin settings
+  if ($twitter['but_color_textcolor'] != '') {
+    $script .= 'data-text-color="' . $twitter['but_color_textcolor'] . '" ';
+  } // endif
+  if ($twitter['but_color_linkcolor'] != '') {
+    $script .= 'data-link-color="' . $twitter['but_color_linkcolor'] . '" ';
+  } // endif
+
+  // TODO: Get the language from Drupal
+  $script .= 'data-lang="' . $twitter['but_lang'] . '" ';
+
+  // Set the width and alignment if values are specified in the admin settings
+  if ($twitter['but_width'] != '') {
+    $script .= 'data-width="' . $twitter['but_width'] . '" ';
+  } // endif
+  if ($twitter['but_text_align'] != '') {
+    $script .= 'data-align="' . $twitter['but_text_align'] . '" ';
+  } //endif
+  $script .= '>Follow @' . $twitter['href'] . '</a>';
+  $script .= '<script src="http://platform.twitter.com/widgets.js" type="text/javascript"></script>';
+
+  return $script;
+}
+
+/**
+ * Create markup for a 'Foursquare Venue Widget' (by placewidget.com) to be placed in a block
+ */
+function jasm_4sqr_venuebox() {
+  // Fetch the necessary variables for a Foursquare venue widget
+  $general = jasm_get_values_general();
+  $foursquare = jasm_get_values_4sqr();
+
+  $script = '';
+  $script .= '<script type="text/javascript" src="http://www.placewidget.com/widget?';
+  // PlaceWidget generated code
+  $script .= 'k=' . $foursquare['placewidget_code'];
+  $script .= '&i=' . $foursquare['interval'];
+  // Set the width of the widget to the closest available value as set in the general settings
+  if ($general['blockwidth'] < 161) {
+    $closest_width = 160;
+  }
+  elseif ($general['blockwidth'] < 201) {
+    $closest_width = 200;
+  }
+  else {
+    $closest_width = 250;
+  } //endif
+  $script .= '&s=' . $closest_width;
+  $script .= '&v=1"></script>';
+  return $script;
+}
+
+/**
+ * Set variables to place in templates
+ **/
+function jasm_preprocess(&$variables, $hook) {
+  $variables['jasm_service_list'] = jasm_service_list();
+}
+
+/**
+ * Return the default value required in the variable array(s)
+ */
+function jasm_get_values() {
+  $defaults = array(
+    'jasm_general' => jasm_get_values_general(),
+    'jasm_facebook' => jasm_get_values_facebook(),
+    'jasm_flickr' => jasm_get_values_flickr(),
+    'jasm_4sqr' => jasm_get_values_4sqr(),
+    'jasm_rss' => jasm_get_values_rss(),
+    'jasm_twitter' => jasm_get_values_twitter(),
+    'jasm_youtube' => jasm_get_values_youtube(),
+    'jasm_custom_01' => jasm_get_values_custom_01(),
+    'jasm_custom_02' => jasm_get_values_custom_02(),
+    'jasm_custom_03' => jasm_get_values_custom_03(),
+  );
+
+  return $defaults;
+}
+
+function jasm_get_values_general() {
+  $defaults = array(
+    'blockwidth' => 270,
+    'blockheight' => 500,
+  );
+  $defaults_general = variable_get('jasm_general', $defaults);
+  return $defaults_general;
+}
+
+function jasm_get_values_facebook() {
+  $defaults = array(
+    'name' => t('Facebook'),
+    'basepath' => 'www.facebook.com',
+    'inlist' => FALSE,
+    'href' => 'CerebraZA',
+    'fbid' => '151456121547843',
+    'colorscheme' => 'light',
+    'faces' => TRUE,
+    'stream' => TRUE,
+    'header' => TRUE,
+    'weight' => 0,
+  );
+
+  $defaults_facebook = variable_get('jasm_facebook', $defaults);
+  return $defaults_facebook;
+}
+
+function jasm_get_values_flickr() {
+  $defaults = array(
+    'name' => t('Flickr'),
+    'inlist' => FALSE,
+    'basepath' => 'www.flickr.com/photos',
+    'href' => t('CerebraZA'),
+    'weight' => 0,
+  );
+
+  $defaults_flickr = variable_get('jasm_flickr', $defaults);
+  return $defaults_flickr;
+}
+
+function jasm_get_values_4sqr() {
+  $defaults = array(
+    'name' => t('Foursquare'),
+    'inlist' => FALSE,
+    'basepath' => 'www.foursquare.com/venue',
+    'href' => t('769225'),
+    'weight' => 0,
+    'placewidget_code' => 'agtwbGFjZXdpZGdldHIOCxIFVmVudWUY_v__AQw',
+    'interval' => 60,
+    'closest_width' => 200,
+    'version' => '1',
+  );
+
+  $defaults_4sqr = variable_get('jasm_4sqr', $defaults);
+  return $defaults_4sqr;
+}
+
+function jasm_get_values_rss() {
+  $thisserver = $_SERVER['SERVER_NAME'];
+  $defaults = array(
+    'name' => t('RSS'),
+    'inlist' => TRUE,
+    'basepath' => $thisserver,
+    'href' => t('rss.xml'),
+    'weight' => 0,
+  );
+
+  $defaults_rss = variable_get('jasm_rss', $defaults);
+  return $defaults_rss;
+}
+
+function jasm_get_values_twitter() {
+  $defaults = array(
+    'name' => t('Twitter'),
+    'basepath' => 'www.twitter.com',
+    'inlist' => FALSE,
+    'href' => 'cerebra',
+    'pref_pollresults' => TRUE,
+    'pref_scrollbar' => FALSE,
+    'pref_timed' => 'default',
+    'pref_loop' => FALSE,
+    'pref_tweet_interval' => 6,
+    'pref_tweet_number' => 6,
+    'pref_avatars' => TRUE,
+    'pref_timestamp' => FALSE,
+    'pref_hashtags' => TRUE,
+    'color_shellback' => '#333333',
+    'color_shelltext' => '#ffffff',
+    'color_tweetback' => '#000000',
+    'color_tweettext' => '#ffffff',
+    'color_link' => '#4aed05',
+    // Twitter Follow Button Settings
+    'but_show_count' => 'true',
+    'but_color_butcolor' => 'blue',
+    'but_color_textcolor' => '',
+    'but_color_linkcolor' => '',
+    'but_lang' => 'en',
+    'but_width' => '',
+    'but_text_align' => '',
+    'weight' => 0,
+  );
+
+  $defaults_twitter = variable_get('jasm_twitter', $defaults);
+  return $defaults_twitter;
+}
+
+function jasm_get_values_youtube() {
+  $defaults = array(
+    'basepath' => t('www.youtube.com'),
+    'inlist' => FALSE,
+    'name' => 'YouTube',
+    'href' => t('CerebraZA'),
+    'weight' => 0,
+  );
+
+  $defaults_youtube = variable_get('jasm_youtube', $defaults);
+  return $defaults_youtube;
+}
+
+// TODO: Create AHAH friendly custom services
+
+function jasm_get_values_custom_01() {
+  $defaults = array(
+    'basepath' => '',
+    'name' => t('Custom'),
+    'inlist' => FALSE,
+    'basepath' => NULL,
+    'href' => t('www.cerebra.co.za'),
+    'weight' => 4,
+  );
+  $defaults_custom = variable_get('jasm_custom_01', $defaults);
+  return $defaults_custom;
+}
+
+function jasm_get_values_custom_02() {
+  $defaults = array(
+    'basepath' => '',
+    'name' => t('Custom'),
+    'inlist' => FALSE,
+    'basepath' => NULL,
+    'href' => t('www.cerebra.co.za'),
+    'weight' => 5,
+  );
+  $defaults_custom = variable_get('jasm_custom_02', $defaults);
+  return $defaults_custom;
+}
+
+function jasm_get_values_custom_03() {
+  $defaults = array(
+    'basepath' => '',
+    'name' => t('Custom'),
+    'inlist' => FALSE,
+    'basepath' => NULL,
+    'href' => t('www.cerebra.co.za'),
+    'weight' => 6,
+  );
+  $defaults_custom = variable_get('jasm_custom_03', $defaults);
+  return $defaults_custom;
+}

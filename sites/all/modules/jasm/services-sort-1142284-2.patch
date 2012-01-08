@@ -1,0 +1,44 @@
+diff --git a/jasm.module b/jasm.module
+index ef188f6..4fb3794 100644
+--- a/jasm.module
++++ b/jasm.module
+@@ -610,13 +610,14 @@ function jasm_service_list() {
+   $jasm = jasm_get_values();
+   $servicelist = array();
+   $i = 0;
+-  foreach ($jasm as $service):
+-    if ($service['inlist']) :
+-      $servicelist[$i] = l($service['name'],('http://' . $service['basepath'] . '/' . $service['href']), array('attributes' => array('class' => strtolower($service['name']),),));
+-      $i++;
+-    endif;
+-    
+-  endforeach;
++  //Sort the applicable elements by weight
++  array_shift($jasm);
++  uasort($jasm, "element_sort");
++
++  foreach ($jasm as $service) {
++    $servicelist[$i] = l($service['name'],('http://' . $service['basepath'] . '/' . $service['href']), array('attributes' => array('class' => strtolower($service['name']),),));
++    $i++;
++  }
+   $output = theme_item_list($servicelist, NULL, 'ul', NULL);
+   return $output;
+ }
+@@ -702,7 +703,7 @@ function jasm_twitter_profilebox() {
+   $script .= '}';
+   $script .= '}).render().setUser(\'' . $twitter['href']. '\').start();';
+   $script .= '</script>';
+-  
++
+   return $script;
+ }
+ 
+@@ -727,7 +728,7 @@ function jasm_get_values() {
+     'jasm_youtube' => jasm_get_values_youtube(),
+     'jasm_custom' => jasm_get_values_custom(),
+   );
+-  
++
+   return $defaults;
+ }
+ 

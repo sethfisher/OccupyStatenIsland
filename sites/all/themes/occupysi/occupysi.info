@@ -1,0 +1,27 @@
+name = Occupy Staten Island
+description = Occupy Staten Island theme.
+core = 7.x
+engine = phptemplate
+base theme = typebased
+
+stylesheets[all][] = occupysi.css
+
+regions[header_menu]          = Header menu
+regions[content_prefix]       = Content prefix
+regions[footer_menu]          = Footer menu
+regions[sidebar]              = Sidebar
+regions[content]              = Content
+regions[footer_column_first]  = Footer first column
+regions[footer_column_second] = Footer second column
+regions[help]                 = Help
+regions[page_top]             = Page top
+regions[page_bottom]          = Page bottom
+
+settings[base_font_size]        = '14px'
+settings[layout_1_width]        = '100%'
+settings[layout_1_min_width]    = '960px'
+settings[layout_1_max_width]    = '960px'
+settings[layout_2_width]        = '100%'
+settings[layout_2_min_width]    = '960px'
+settings[layout_2_max_width]    = '960px'
+settings[trim_pager]            = '5'
