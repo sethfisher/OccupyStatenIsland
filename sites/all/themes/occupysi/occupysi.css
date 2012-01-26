@@ -136,6 +136,14 @@ width: 15em;
   opacity: .8;
 }
 
+#sidebar div.item-list li div.views-field {
+  padding-left: 19px;
+}
+
+#sidebar div.item-list li div.views-field.views-field-title {
+  padding-left: 0;
+}
+
 #block-jasm-twitter_profile_widget .twtr-doc {
   width: auto !important;
 }
