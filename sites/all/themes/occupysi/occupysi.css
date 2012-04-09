@@ -111,6 +111,10 @@ width: 20em;
 width: 15em;
 }
 
+#header-menu a.menu-siga {
+  background-color: #0066CC;
+}
+
 #header-menu div.social-networking {
   float: right;
   margin-right: 10px;
